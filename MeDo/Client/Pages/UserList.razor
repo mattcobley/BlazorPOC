@@ -1,0 +1,56 @@
+﻿@page "/list"
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.WebAssembly.Authentication
+@using MeDo.Shared
+@using MeDo.Client.State
+
+@attribute [Authorize]
+@inject HttpClient Http
+
+@inject StateContainer StateContainer
+
+@inherits StateContainerComponentBase
+
+@{ 
+    var thisList = StateContainer.TodoListsState.Find(entry => entry.Id == StateContainer.ShowListIdState);
+}
+<h1>@thisList.Name</h1>
+
+<br/>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Completed</th>
+            <th>Name</th>
+            <th>Description</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var task in thisList.Tasks)
+        {
+            <tr>
+                <td><button class="btn btn-primary" @onclick="() => ToggleCompleted(task.Id)">@task.Completed</button></td>
+                <td>@task.Name</td>
+                <td><i>@task.Description</i></td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@code {
+    private async Task ToggleCompleted(int taskId)
+    {
+        try
+        {
+            var thisList = StateContainer.TodoListsState.Find(entry => entry.Id == StateContainer.ShowListIdState);
+            var task = thisList.Tasks.Find(task => task.Id == taskId);
+            task.Completed = !task.Completed;
+            await Http.PostAsJsonAsync<TodoTask>("Task", task);
+        }
+        catch (AccessTokenNotAvailableException exception)
+        {
+            exception.Redirect();
+        }
+    }
+}

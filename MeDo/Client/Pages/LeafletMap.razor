@@ -1,0 +1,56 @@
+﻿@page "/leafletmap"
+
+@using Microsoft.AspNetCore.Authorization
+
+@attribute [Authorize]
+
+@inject IJSRuntime JSRuntime
+
+
+<h1>Display Leaflet Map</h1>
+<div id="leaflet-map" style="height:500px;width:100%;">
+</div>
+<button @onclick="AddMarker">Add marker</button>
+
+<button @onclick="RemoveMarker">Remove marker</button>
+
+<div>Marker is visible: @MarkerIsVisible</div>
+
+@code{
+    private DotNetObjectReference<LeafletMap> objRef;
+
+    private bool MarkerIsVisible = false;
+
+    [JSInvokable]
+    public bool ToggleMarkerIsVisible(bool isVisible)
+    {
+        MarkerIsVisible = isVisible;
+        return MarkerIsVisible;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await JSRuntime.InvokeVoidAsync("initializeLeaflet");
+        }
+    }
+
+    private async Task AddMarker()
+    {
+        if (objRef == null)
+        {
+            objRef = DotNetObjectReference.Create(this);
+        }
+        await JSRuntime.InvokeVoidAsync("addMarker", objRef);
+    }
+
+    private async Task RemoveMarker()
+    {
+        if (objRef == null)
+        {
+            objRef = DotNetObjectReference.Create(this);
+        }
+        await JSRuntime.InvokeVoidAsync("removeMarker", objRef);
+    }
+}

@@ -1,0 +1,47 @@
+﻿@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Components.WebAssembly.Authentication
+@using MeDo.Client.State
+@using MeDo.Client.Pages
+
+@inject NavigationManager Navigation
+@inject SignOutSessionStateManager SignOutManager
+
+@inherits StateContainerComponentBase
+@inject StateContainer StateContainer
+
+<AuthorizeView>
+    <Authorized>
+        <div class="top-row pl-4 navbar navbar-dark">
+            <a class="navbar-brand" href="">MeDo</a>
+            <button class="navbar-toggler" @onclick="ToggleNavMenu">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+        </div>
+        <a href="authentication/profile">@context.User.Identity.Name</a>
+        <button class="nav-link btn btn-link" @onclick="BeginSignOut">Log out</button>
+        <UserLists />
+        <NavLink class="nav-link" href="googlemap">
+            <span class="oi oi-list-rich" aria-hidden="true"></span> Google Map
+        </NavLink>
+        <NavLink class="nav-link" href="leafletmap">
+            <span class="oi oi-list-rich" aria-hidden="true"></span> Leaflet Map
+        </NavLink>
+    </Authorized>
+    <NotAuthorized>
+        <a href="authentication/register">Register</a>
+        <a href="authentication/login">Log in</a>
+    </NotAuthorized>
+</AuthorizeView>
+
+@code{
+    private void ToggleNavMenu()
+    {
+        StateContainer.CollapseNavMenuState = !StateContainer.CollapseNavMenuState;
+    }
+
+    private async Task BeginSignOut(MouseEventArgs args)
+    {
+        await SignOutManager.SetSignOutState();
+        Navigation.NavigateTo("authentication/logout");
+    }
+}
